@@ -5,13 +5,19 @@
 //  Created by Oliver Finlayson on 2023-04-04.
 //
 
+import Blackbird
 import SwiftUI
 
 struct ListView: View {
     
     //MARK: Stored Properties:
     
-    @State var todoItems: [TodoItem] = existingTodoItems
+    @Environment(\.blackbirdDatabase) var db:
+    Blackbird.Database?
+    
+    @BlackbirdLiveModels({ db in
+        try await TodoItem.read(from: db)
+    }) var todoItems
     
     @State var newItemDescription: String = ""
     
@@ -28,16 +34,17 @@ struct ListView: View {
                     TextField("Enter a to-do item", text: $newItemDescription)
                     
                     Button(action: {
-                        let lastId = todoItems.last!.id
                         
                         
-                        let newID = lastId + 1
+                        Task{
+                            //Write database
+                            try await db! .transaction { core in
+                                try core.query("INSERT INTO TodoItem (description) VALUES (?)", newItemDescription )
+                            }
+                            newItemDescription = ""
+                            
+                        }
                         
-                        let newTodoItem = TodoItem(id: newID, description: newItemDescription, completed: false)
-                        
-                        todoItems.append(newTodoItem)
-                        
-                        newItemDescription = ""
                         
                         
                         
@@ -48,7 +55,7 @@ struct ListView: View {
                 }
                 .padding (20)
                 
-                List(todoItems) { currentItem in
+                List(todoItems.results) { currentItem in
                     
                     Label(title: {
                         Text (currentItem.description)
