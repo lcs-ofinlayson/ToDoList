@@ -55,7 +55,14 @@ struct ListView: View {
                 }
                 .padding (20)
                 
-                List(todoItems.results) { currentItem in
+                List{
+                    
+                    ForEach(todoItems.results) { currentItem in
+                    
+                
+                
+                
+               
                     
                     Label(title: {
                         Text (currentItem.description)
@@ -74,7 +81,7 @@ struct ListView: View {
                                 try core.query("UPDATE TodoItem SET completed = (?) WHERE id = (?)",
                                                !currentItem.completed,
                                                currentItem.id)
-                                               
+                            }
                             }
                         }
                     }
