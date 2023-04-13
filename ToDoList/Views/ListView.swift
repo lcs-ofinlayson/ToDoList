@@ -16,10 +16,14 @@ struct ListView: View {
     Blackbird.Database?
     
     @BlackbirdLiveModels({ db in
-        try await TodoItem.read(from: db)
+        try await TodoItem.read(from: db,
+                                sqlWhere: "description LIKE ?", "%\(searchText)%")
+        
     }) var todoItems
     
     @State var newItemDescription: String = ""
+    
+    @State var searchText = ""
     
     
     //MARK: Computed Properties
@@ -34,7 +38,7 @@ struct ListView: View {
                     TextField("Enter a to-do item", text: $newItemDescription)
                     
                     Button(action: {
-                        
+        
                         
                         Task{
                             //Write database
@@ -88,6 +92,7 @@ struct ListView: View {
                     .onDelete(perform: removeRows)
                     
                 }
+                .searchable(text: $searchText)
             }
             .navigationTitle("To do")
             
